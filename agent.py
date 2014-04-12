@@ -38,6 +38,9 @@ class Agent:
         # number of other agents to interact with in a round
         self.sociability = 3
 
+        # cultural marker - be lame and just use a string
+        #self.culture = ...
+
         # dict of reputations
         self.reputations = dict()
         
@@ -83,16 +86,30 @@ class Agent:
     def reputation(self, agent):
         return self.reputations.get(agent, 0.)
 
+    def update_reputation(self, agent, other_choice):
+        # update reputation dict
+        # update perceived self reputation as well as other's reputation
+        # if other cooperated, increase their reputation and increase self rep
+        # else, decrease theirs and own
+        pass
+
     def cooperates_with(self, other):
         # return true if cooperates, false otherwise
         return np.random.uniform(-1,1) < self.perception(other)
 
+    def receive_meme(self, other):
+        # maybe learn from other
+        # should not consider their self reputation?
+        pass
+
     def act(self, other):
         # select an action, carry out, update reputations, etc.
-
-        # select action by finding closest market to perception
+        # select action by finding closest marker to perception
         p = self.perception(other)
         action = self.actions[min(self.actions.keys(), key=lambda x:abs(x-p))]
+
+        # IF LIKE, SHARE INFORMATION WITH THEM
+        # choose if like based on cooperation? or ingroup/rep?
 
         # decide if cooperating
         self_choice  = self.cooperates_with(other)
@@ -105,11 +122,6 @@ class Agent:
         self.update_reputation(other, other_choice)
         other.update_reputation(self, self_choice)
         # TODO:  consider outcome rather than just whether they cooperated?
-
-    def update_reputation(self, agent, did_cooperate):
-        # update reputation dict
-        # update perceived self reputation as well as other's reputation
-        pass
 
     def mate(self, other, self_choice, other_choice):
         # try to mate
@@ -168,9 +180,6 @@ class Agent:
         food_cost    = max(1, int(round(scale*self.food_metabolism)))
         leisure_cost = max(1, int(round(scale*self.leisure_metabolism)))
         return (food_cost, leisure_cost)
-
-    def get_color(self):
-        pass
 
 
 if __name__=='__main__':
