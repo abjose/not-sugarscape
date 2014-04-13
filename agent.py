@@ -5,8 +5,8 @@ Agents for the (not)sugarscape.
 
 """
 TODO
-- add way to construct new agent given parents
-- WHERE TO USE LEISURE? EVERYWHERE FOOD IS???
+- every tick, have chance to change own stuff slightly (or completely) based
+  on your utility
 """
 
 import numpy as np
@@ -73,6 +73,7 @@ class Agent:
         return self.success_pref * self.utility(other) \
                + self.reputation_pref * self.reputations[other] \
                #+ self.ingroup_pref * self.cultural_distance(other)
+       # NOT SURE THIS IS RIGHT - need to normalize between -1 and 1?
 
     def cultural_distance(self, other):
         pass
@@ -180,6 +181,25 @@ class Agent:
         food_cost    = max(1, int(round(scale*self.food_metabolism)))
         leisure_cost = max(1, int(round(scale*self.leisure_metabolism)))
         return (food_cost, leisure_cost)
+
+    def make_baby(self, other):
+        # combine stuff...mutate...etc.
+        # how to add agent to simulation list from here?
+        # to combine, could...average parent's markers?
+        # and parent's cultures?
+        # and utility/percpetion preferences...
+        # could add in some random variation
+
+        # make a new Agent
+        baby = Agent()
+
+        # combine and mutate 
+
+        pass
+
+    def constrain(self, v):
+        # constrain v between -1 and 1
+        return min(max(-1.,v),1.)
 
 
 if __name__=='__main__':
