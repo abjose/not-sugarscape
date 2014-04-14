@@ -171,34 +171,18 @@ class Agent:
 
     def hunt(self, other, self_choice, other_choice):
         # play stag hunt game
-        self_food_cost,  self_leisure_cost  = self.get_costs(1.) # hard
-        other_food_cost, other_leisure_cost = other.get_costs(1.)
-        # calculate scores
         self_score, other_score = Agent.game[(self_choice, other_choice)]
         # update scores
-        self.food     += self_score  - self_food_cost
-        other.food    += other_score - other_food_cost
-        self.leisure  -= self_leisure_cost
-        other.leisure -= other_leisure_cost
-        # different costs based on cooperate or defect? ehh
+        self.food  += self_score
+        other.food += other_score
 
     def gather(self, other, self_choice, other_choice):
         # gain some food
-        food_cost, leisure_cost = self.get_costs(0.25) # pretty easy
-        self.food    += np.random.randint(1,4) - food_cost
-        self.leisure -= leisure_cost
+        self.food += np.random.randint(1,5)
         
     def rest(self, other, self_choice, other_choice):
         # increases leisure
-        food_cost, _ = self.get_costs(0.1) # easy
-        self.food    -= food_cost
-        self.leisure += np.random.randin(1,5)
-
-    def get_costs(self, scale):
-        # return (food_cost, leisure_cost) tuple based on 'scale' (difficulty)
-        food_cost    = max(1, int(round(scale*self.food_metabolism)))
-        leisure_cost = max(1, int(round(scale*self.leisure_metabolism)))
-        return (food_cost, leisure_cost)
+        self.leisure += np.random.randint(1,5)
 
     def make_baby(self, other):
         # combine stuff...mutate...etc.
