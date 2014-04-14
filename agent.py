@@ -52,7 +52,7 @@ class Agent:
         self.actions = dict(mate = self.mate,
                             hunt = self.hunt,
                             rest = self.rest
-                            attack = self.attack,
+                            punish = self.punish,
                             gather = self.gather,)
 
         # mapping from action to expected resource change
@@ -152,9 +152,8 @@ class Agent:
         # made baby
         self.children += 1
 
-
-    def attack(self, other, self_choice, other_choice):
-        # fight!
+    def punish(self, other, self_choice, other_choice):
+        # punish the other agent - mostly affects reputation
         # maybe make metabolism correlate to strength?
         # just remove own costs from opponent?
         # also take into account stores of things?
