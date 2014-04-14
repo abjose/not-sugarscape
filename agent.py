@@ -8,6 +8,8 @@ TODO
 - consider adding cultural stuff...
 - every tick, have chance to change own stuff slightly (or completely) based
   on your utility
+- add memetic communication stuff to act()
+- add variable action costs back in?
 """
 
 import numpy as np
@@ -34,11 +36,14 @@ class Agent:
         self.leisure = np.random.randint(5,26)
         self.leisure_metabolism = np.random.randint(1,Agent.max_leisure_met)
 
+        # number of children created
+        self.children = 0
+
         # preferences for utility
-        self.food_pref    = self.food_metabolism   /float(Agent.max_food_met)
-        self.leisure_pref = self.leisure_metabolism/float(Agent.max_leisure_met)
-        self.rep_pref     = np.random.uniform(-1,1)
-        self.coop_pref    = np.random.uniform(-1,1) # need?
+        self.food_pref    = np.random.uniform()
+        self.leisure_pref = np.random.uniform()
+        self.rep_pref     = np.random.uniform()
+        self.coop_pref    = np.random.uniform() # need?
 
         # dict of reputations
         self.reputation = dict()
@@ -59,30 +64,31 @@ class Agent:
         # select action by finding closest marker to perception
         best_action = None
         best_utility = -999
-        for :
-            pass
+        res = self.get_resources(self)
+        for action in self.actions.keys():
+            # calculate potential utility
+            pu = self.utility(self.add_resources(res, self.results[action]))
+            # track if best action
+            if pu > best_utility:
+                best_utility = pu
+                best_action  = action
 
-        #HOW TO TEMP. CHANGE AGENTS STORES? JUST HAVE A GET_RESOURCES
-        #FUNCTION THAT IS PASSED TO THE UTILITY FUNCTION?
-
-
-        p = self.perception(other)
-        action = self.actions[min(self.actions.keys(), key=lambda x:abs(x-p))]
-
-        # IF LIKE, SHARE INFORMATION WITH THEM
-        # choose if like based on cooperation? or ingroup/rep?
-
+        # one-liner...
+        #action = self.actions[max(self.actions.keys(), key=lambda a: self.utility(self.add_resources(res,self.results[a])))]
+ 
         # decide if cooperating
         self_choice  = self.cooperates_with(other)
         other_choice = other.cooperates_with(self)
 
         # do action
-        action(other, self_choice, other_choice)
+        self.actions[action](other, self_choice, other_choice)
 
         # update reputations
         self.update_reputation(other, other_choice)
         other.update_reputation(self, self_choice)
         # TODO:  consider outcome rather than just whether they cooperated?
+
+        # subtract metabolism from resource store - die if too low
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
@@ -90,24 +96,47 @@ class Agent:
                     leisure    = agent.leisure,
                     reputation = self.reputation[agent])
 
+    def add_resources(self, r1, r2):
+        """ Add corresponding entries in two resources dicts. """
+        return dict([(k, r1[k]+r2[k]) for k in r1.keys()])
+
     def utility(self, resources):
         # given an agent's resources, return that agent's (perceived) utility
-        return self.food_pref * resources['food'] \
-               + self.leisure_pref * resources['leisure'] \
-               + self.reputation_pref * resources['reputation']
+        # calculate food well-being (# rounds unitl starvation)
+        fwb = self.food / float(self.food_metabolism)
+        # calculate leisure well-being
+        lwb = self.leisure / float(self.leisure_metabolism)
+        # number of children...
+        c = self.children
+        # reputation...
+        r = self.reputation[self]
+        # return sum
+        return fwb + lwb + c + r
+        # don't use preferences yet?
+        #return self.food_pref * resources['food'] \
+        #       + self.leisure_pref * resources['leisure'] \
+        #       + self.reputation_pref * resources['reputation']
+
+    def reputation(self, agent):
+        """ Return reputation of agent or default of 0.5 """
+        return self.reputation.get(agent, 0.5)
 
     def update_reputation(self, agent, other_choice):
         # update reputation dict
-        # update perceived self reputation as well as other's reputation
-        # if other cooperated, increase their reputation and increase self rep
-        # else, decrease theirs and own
-        # perhaps change 'step' based on previous perception of them? Like
-        # will lower perception of good more if they defect?
-        pass
+        # TODO: make updates nicer - specifically, if agent has high reputation,
+        #       maybe make defection seem 'worse'
+        # Basically want to modify rep more based on reputation of other
+        # like if agent with high rep defects, want to lower own rep more...
+        if other_choice:
+            self.reputation[agent] = self.constrain(self.reputation[agent]+0.1)
+            self.reputation[self]  = self.constrain(self.reputation[self] +0.1)
+        else:
+            self.reputation[agent] = self.constrain(self.reputation[agent]-0.1)
+            self.reputation[self]  = self.constrain(self.reputation[self] -0.1)
 
     def cooperates_with(self, other):
         # return true if cooperates, false otherwise
-        return np.random.uniform(-1,1) < self.perception(other)
+        return np.random.uniform() < self.reputation(other)
 
     def receive_meme(self, other):
         # maybe learn from other
@@ -116,7 +145,6 @@ class Agent:
 
     def mate(self, other, self_choice, other_choice):
         # try to mate
-        # what's the point of having a baby?
         self_food_cost, self_leisure_cost   = 0,0
         other_food_cost, other_leisure_cost = 0,0
         if self_choice:
