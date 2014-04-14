@@ -13,17 +13,17 @@ Have a bag of agents, facilitate interactions...
 
 class Simulator:
 
-    def __init__(self, ):
-        self.agents = []
+    def __init__(self, num_agents):
+        self.agents = [Agent() for _ in range(num_agents)]
 
     def tick(self, ):
         # shuffle agents
-        np.random.shuffle(self.agents)
+        #np.random.shuffle(self.agents)
         # keep track of who's still living
         alive = self.agents
         # then iterate through and act
         for a in self.agents:
-            a.tick(alive)
+            a.act(alive)
             if a.food <= 0 or a.leisure <= 0:
                 # kill a
                 print 'WOE IS ME!'
@@ -43,4 +43,5 @@ if __name__=='__main__':
     # should initially populate environment with agents
     # to tick, select agents in random order to carry out its rules
     
-    pass
+    s = Simulator(10)
+    s.run()
