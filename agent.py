@@ -146,13 +146,6 @@ class Agent:
 
     def mate(self, other, self_choice, other_choice):
         # try to mate
-        self_food_cost, self_leisure_cost   = 0,0
-        other_food_cost, other_leisure_cost = 0,0
-        if self_choice:
-            self_food_cost,  self_leisure_cost  = self.get_costs(.5) # medium
-        if other_choice:
-            other_food_cost, other_leisure_cost = other.get_costs(.5)
-        # make baby if both cooperate
         if self_choice and other_choice:
             # TODO: ADD GENETIC STUFF
             pass
