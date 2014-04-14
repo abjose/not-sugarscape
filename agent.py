@@ -78,6 +78,8 @@ class Agent:
                 best_utility = pu
                 best_action  = action
 
+        print 'I am doing:', best_action
+
         # one-liner...
         #action = self.actions[max(self.actions.keys(), key=lambda a: self.utility(self.add_resources(res,self.results[a])))]
  
@@ -86,12 +88,12 @@ class Agent:
         other_choice = other.cooperates_with(self)
 
         # do action
-        if action == 'mate':
+        if best_action == 'mate':
             # add baby if had one
             baby = self.mate(other, self_choice, other_choice)
             if baby: agents.append(baby)
         else:
-            self.actions[action](other, self_choice, other_choice)
+            self.actions[best_action](other, self_choice, other_choice)
 
         # update reputations
         self.update_reputation(other, other_choice)
@@ -103,7 +105,7 @@ class Agent:
 
         # update perception of rewards
         new_res = self.get_resources(self)
-        self.update_results(action, res, new_res)
+        self.update_results(best_action, res, new_res)
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
