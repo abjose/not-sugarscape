@@ -10,6 +10,8 @@ TODO
   on your utility
 - add memetic communication stuff to act()
 - add variable action costs back in?
+- kinda weird that still calculate cooperation on non-social tasks
+- MAKE PUNISHMENT BETTER
 """
 
 import numpy as np
@@ -51,13 +53,13 @@ class Agent:
         # dict of possible actions
         self.actions = dict(mate = self.mate,
                             hunt = self.hunt,
-                            rest = self.rest
+                            rest = self.rest,
                             punish = self.punish,
                             gather = self.gather,)
 
         # mapping from action to expected resource change
         d = dict(food=0, leisure=0, reputation=0, children=0)
-        self.results = dict([(k, d.copy()) for k,v in self.actions.items()])
+        self.results = dict([(k, d.copy()) for k in self.actions.keys()])
 
     def act(self, agents):
         """ Choose an action greedily based on perceived future utility. """
@@ -101,25 +103,25 @@ class Agent:
 
         # update perception of rewards
         new_res = self.get_resources(self)
-        self.update_results(res, new_res)
+        self.update_results(action, res, new_res)
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
         return dict(food       = agent.food,
                     leisure    = agent.leisure,
-                    reputation = self.reputation[agent],
+                    reputation = self.get_reputation(agent),
                     children   = agent.children)
 
     def add_resources(self, r1, r2):
         """ Add corresponding entries in two resources dicts. """
         return dict([(k, r1[k]+r2[k]) for k in r1.keys()])
 
-    def update_results(self, r1, r2):
+    def update_results(self, action, r1, r2):
         # given two sets of resources, find difference and update results dict
         # assumes r1 is from before r2
         for k in r1.keys():
-            self.results[k] += r2[k] - r1[k]
-            self.results[k] /= 2.
+            self.results[action][k] += r2[k] - r1[k]
+            self.results[action][k] /= 2.
 
     def utility(self, resources):
         # given an agent's resources, return that agent's (perceived) utility
@@ -135,7 +137,7 @@ class Agent:
         # don't use preferences yet?
         return fwb + lwb + c + r
 
-    def reputation(self, agent):
+    def get_reputation(self, agent):
         """ Return reputation of agent or default of 0.5 """
         return self.reputation.get(agent, 0.5)
 
@@ -146,15 +148,15 @@ class Agent:
         # Basically want to modify rep more based on reputation of other
         # like if agent with high rep defects, want to lower own rep more...
         if other_choice:
-            self.reputation[agent] = self.constrain(self.reputation[agent]+0.1)
-            self.reputation[self]  = self.constrain(self.reputation[self] +0.1)
+            self.reputation[agent]=self.constrain(self.get_reputation(agent)+.1)
+            self.reputation[self]=self.constrain(self.get_reputation(self)+.1)
         else:
-            self.reputation[agent] = self.constrain(self.reputation[agent]-0.1)
-            self.reputation[self]  = self.constrain(self.reputation[self] -0.1)
+            self.reputation[agent]=self.constrain(self.get_reputation(agent)-.1)
+            self.reputation[self]=self.constrain(self.get_reputation(self) -.1)
 
     def cooperates_with(self, other):
         # return true if cooperates, false otherwise
-        return np.random.uniform() < self.reputation(other)
+        return np.random.uniform() < self.get_reputation(other)
 
     def receive_meme(self, other):
         # maybe learn from other
@@ -180,10 +182,9 @@ class Agent:
 
     def punish(self, other, self_choice, other_choice):
         # punish the other agent - mostly affects reputation
-        # maybe make metabolism correlate to strength?
-        # just remove own costs from opponent?
-        # also take into account stores of things?
-        pass
+        self.reputation[agent] = self.constrain(self.reputation[agent]-0.1)
+        self.reputation[self]  = self.constrain(self.reputation[self] -0.1)
+        # uhh, update other agent's reputation dict?
 
     def hunt(self, other, self_choice, other_choice):
         # play stag hunt game
