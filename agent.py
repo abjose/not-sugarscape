@@ -12,6 +12,7 @@ TODO
 - add variable action costs back in?
 - kinda weird that still calculate cooperation on non-social tasks
 - MAKE PUNISHMENT BETTER
+- add initial better guesses to rewards?
 """
 
 import numpy as np
@@ -59,7 +60,7 @@ class Agent:
 
         # mapping from action to expected resource change
         d = dict(food=0, leisure=0, reputation=0, children=0)
-        self.results = dict([(k, d.copy()) for k in self.actions.keys()])
+        self.rewards = dict([(k, d.copy()) for k in self.actions.keys()])
 
     def act(self, agents):
         """ Choose an action greedily based on perceived future utility. """
@@ -72,7 +73,7 @@ class Agent:
         res = self.get_resources(self)
         for action in self.actions.keys():
             # calculate potential utility
-            pu = self.utility(self.add_resources(res, self.results[action]))
+            pu = self.utility(self.add_resources(res, self.rewards[action]))
             # track if best action
             if pu > best_utility:
                 best_utility = pu
@@ -81,7 +82,7 @@ class Agent:
         print 'I am doing:', best_action
 
         # one-liner...
-        #action = self.actions[max(self.actions.keys(), key=lambda a: self.utility(self.add_resources(res,self.results[a])))]
+        #action = self.actions[max(self.actions.keys(), key=lambda a: self.utility(self.add_resources(res,self.rewards[a])))]
  
         # decide if cooperating
         self_choice  = self.cooperates_with(other)
@@ -105,7 +106,7 @@ class Agent:
 
         # update perception of rewards
         new_res = self.get_resources(self)
-        self.update_results(best_action, res, new_res)
+        self.update_rewards(best_action, res, new_res)
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
@@ -118,12 +119,12 @@ class Agent:
         """ Add corresponding entries in two resources dicts. """
         return dict([(k, r1[k]+r2[k]) for k in r1.keys()])
 
-    def update_results(self, action, r1, r2):
-        # given two sets of resources, find difference and update results dict
+    def update_rewards(self, action, r1, r2):
+        # given two sets of resources, find difference and update rewards dict
         # assumes r1 is from before r2
         for k in r1.keys():
-            self.results[action][k] += r2[k] - r1[k]
-            self.results[action][k] /= 2.
+            self.rewards[action][k] += r2[k] - r1[k]
+            self.rewards[action][k] /= 2.
 
     def utility(self, resources):
         # given an agent's resources, return that agent's (perceived) utility
@@ -184,8 +185,8 @@ class Agent:
 
     def punish(self, other, self_choice, other_choice):
         # punish the other agent - mostly affects reputation
-        self.reputation[agent] = self.constrain(self.reputation[agent]-0.1)
-        self.reputation[self]  = self.constrain(self.reputation[self] -0.1)
+        self.reputation[other] = self.constrain(self.get_reputation(other)-0.1)
+        self.reputation[self]  = self.constrain(self.get_reputation(self) -0.1)
         # uhh, update other agent's reputation dict?
 
     def hunt(self, other, self_choice, other_choice):
