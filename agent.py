@@ -5,6 +5,7 @@ Agents for the (not)sugarscape.
 
 """
 TODO
+- consider adding cultural stuff...
 - every tick, have chance to change own stuff slightly (or completely) based
   on your utility
 """
@@ -26,86 +27,45 @@ class Agent:
     game[(False,False)] = (lil,lil)
 
     def __init__(self, ):
-        # food store / initial endowment
+        # food store and rate of consumption
         self.food = np.random.randint(5,26)
-        # rate of food store consumption
         self.food_metabolism = np.random.randint(1,Agent.max_food_met)
-        # leisure store / initial endowment
+        # leisure store and rate of consumption
         self.leisure = np.random.randint(5,26)
-        # rate of leisure store consumption
         self.leisure_metabolism = np.random.randint(1,Agent.max_leisure_met)
 
-        # number of other agents to interact with in a round
-        self.sociability = 3
-
-        # cultural marker - be lame and just use a string
-        #self.culture = ...
+        # preferences for utility
+        self.food_pref    = self.food_metabolism   /float(Agent.max_food_met)
+        self.leisure_pref = self.leisure_metabolism/float(Agent.max_leisure_met)
+        self.rep_pref     = np.random.uniform(-1,1)
+        self.coop_pref    = np.random.uniform(-1,1) # need?
 
         # dict of reputations
-        self.reputations = dict()
-        
-        # preferences for utility
-        self.food_pref    = self.food_metabolism   /float(self.max_food_met)
-        self.leisure_pref = self.leisure_metabolism/float(self.max_leisure_met)
+        self.reputation = dict()
+       
+        # dict of possible actions
+        self.actions = dict(mate = self.mate,
+                            hunt = self.hunt,
+                            rest = self.rest
+                            attack = self.attack,
+                            gather = self.gather,)
 
-        # preferences for perception
-        self.cooperation_pref = np.random.uniform(-1,1)
-        self.success_pref     = np.random.uniform(-1,1)
-        self.reputation_pref  = np.random.uniform(-1,1)
-        #self.ingroup_pref     = np.random.uniform(-1,1)
-
-        # dict of possible actions keyed on markers for action selection
-        self.actions = dict()
-        self.actions[np.random.uniform(-1,1)] = self.mate
-        self.actions[np.random.uniform(-1,1)] = self.attack
-        self.actions[np.random.uniform(-1,1)] = self.hunt
-        self.actions[np.random.uniform(-1,1)] = self.gather
-        self.actions[np.random.uniform(-1,1)] = self.rest
-        
-    def tick(self, agents):
-        # given a list of agents composing the world, interact with some
-        for _ in range(self.sociability):
-            other = np.random.choice(agents)
-            self.act(other)
-
-    def perception(self, other):
-        # get own perception of other agent
-        return self.success_pref * self.utility(other) \
-               + self.reputation_pref * self.reputations[other] \
-               #+ self.ingroup_pref * self.cultural_distance(other)
-       # NOT SURE THIS IS RIGHT - need to normalize between -1 and 1?
-
-    def cultural_distance(self, other):
-        pass
-
-    def utility(self, agent):
-        return self.food_pref * agent.food \
-               + self.leisure_pref * agent.leisure \
-               + self.reputation_pref * self.reputations[agent] #\ 
-               # + global stuff?
-
-    def reputation(self, agent):
-        return self.reputations.get(agent, 0.)
-
-    def update_reputation(self, agent, other_choice):
-        # update reputation dict
-        # update perceived self reputation as well as other's reputation
-        # if other cooperated, increase their reputation and increase self rep
-        # else, decrease theirs and own
-        pass
-
-    def cooperates_with(self, other):
-        # return true if cooperates, false otherwise
-        return np.random.uniform(-1,1) < self.perception(other)
-
-    def receive_meme(self, other):
-        # maybe learn from other
-        # should not consider their self reputation?
-        pass
+        # mapping from action to expected resource change
+        self.results = dict([(k, dict(food=0, leisure=0, reputation=0)) 
+                             for k,v in self.actions.items()])
 
     def act(self, other):
-        # select an action, carry out, update reputations, etc.
+        """ Choose an action greedily based on perceived future utility. """
         # select action by finding closest marker to perception
+        best_action = None
+        best_utility = -999
+        for :
+            pass
+
+        #HOW TO TEMP. CHANGE AGENTS STORES? JUST HAVE A GET_RESOURCES
+        #FUNCTION THAT IS PASSED TO THE UTILITY FUNCTION?
+
+
         p = self.perception(other)
         action = self.actions[min(self.actions.keys(), key=lambda x:abs(x-p))]
 
@@ -123,6 +83,36 @@ class Agent:
         self.update_reputation(other, other_choice)
         other.update_reputation(self, self_choice)
         # TODO:  consider outcome rather than just whether they cooperated?
+
+    def get_resources(self, agent):
+        """ Return given agent's resources. """
+        return dict(food       = agent.food,
+                    leisure    = agent.leisure,
+                    reputation = self.reputation[agent])
+
+    def utility(self, resources):
+        # given an agent's resources, return that agent's (perceived) utility
+        return self.food_pref * resources['food'] \
+               + self.leisure_pref * resources['leisure'] \
+               + self.reputation_pref * resources['reputation']
+
+    def update_reputation(self, agent, other_choice):
+        # update reputation dict
+        # update perceived self reputation as well as other's reputation
+        # if other cooperated, increase their reputation and increase self rep
+        # else, decrease theirs and own
+        # perhaps change 'step' based on previous perception of them? Like
+        # will lower perception of good more if they defect?
+        pass
+
+    def cooperates_with(self, other):
+        # return true if cooperates, false otherwise
+        return np.random.uniform(-1,1) < self.perception(other)
+
+    def receive_meme(self, other):
+        # maybe learn from other
+        # should not consider their self reputation?
+        pass
 
     def mate(self, other, self_choice, other_choice):
         # try to mate
