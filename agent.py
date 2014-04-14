@@ -56,11 +56,14 @@ class Agent:
                             gather = self.gather,)
 
         # mapping from action to expected resource change
-        self.results = dict([(k, dict(food=0, leisure=0, reputation=0)) 
-                             for k,v in self.actions.items()])
+        d = dict(food=0, leisure=0, reputation=0, children=0)
+        self.results = dict([(k, d.copy()) for k,v in self.actions.items()])
 
-    def act(self, other):
+    def act(self, agents):
         """ Choose an action greedily based on perceived future utility. """
+        # choose an agent to interact with (if necessary?)
+        other = np.random.choice(agents)
+
         # select action by finding closest marker to perception
         best_action = None
         best_utility = -999
@@ -81,7 +84,12 @@ class Agent:
         other_choice = other.cooperates_with(self)
 
         # do action
-        self.actions[action](other, self_choice, other_choice)
+        if action == 'mate':
+            # add baby if had one
+            baby = self.mate(other, self_choice, other_choice)
+            if baby: agents.append(baby)
+        else:
+            self.actions[action](other, self_choice, other_choice)
 
         # update reputations
         self.update_reputation(other, other_choice)
@@ -91,39 +99,48 @@ class Agent:
         self.food    -= self.food_metabolism
         self.leisure -= self.leisure_metabolism
 
+        # update perception of rewards
+        new_res = self.get_resources(self)
+        self.update_results(res, new_res)
+
     def get_resources(self, agent):
         """ Return given agent's resources. """
         return dict(food       = agent.food,
                     leisure    = agent.leisure,
-                    reputation = self.reputation[agent])
+                    reputation = self.reputation[agent],
+                    children   = agent.children)
 
     def add_resources(self, r1, r2):
         """ Add corresponding entries in two resources dicts. """
         return dict([(k, r1[k]+r2[k]) for k in r1.keys()])
 
+    def update_results(self, r1, r2):
+        # given two sets of resources, find difference and update results dict
+        # assumes r1 is from before r2
+        for k in r1.keys():
+            self.results[k] += r2[k] - r1[k]
+            self.results[k] /= 2.
+
     def utility(self, resources):
         # given an agent's resources, return that agent's (perceived) utility
         # calculate food well-being (# rounds unitl starvation)
-        fwb = self.food / float(self.food_metabolism)
+        fwb = resources['food'] / float(self.food_metabolism)
         # calculate leisure well-being
-        lwb = self.leisure / float(self.leisure_metabolism)
+        lwb = resources['leisure'] / float(self.leisure_metabolism)
         # number of children...
-        c = self.children
+        c = resources['children']
         # reputation...
-        r = self.reputation[self]
+        r = resources['reputation']
         # return sum
-        return fwb + lwb + c + r
         # don't use preferences yet?
-        #return self.food_pref * resources['food'] \
-        #       + self.leisure_pref * resources['leisure'] \
-        #       + self.reputation_pref * resources['reputation']
+        return fwb + lwb + c + r
 
     def reputation(self, agent):
         """ Return reputation of agent or default of 0.5 """
         return self.reputation.get(agent, 0.5)
 
     def update_reputation(self, agent, other_choice):
-        # update reputation dict
+        """ update reputation dict """
         # TODO: make updates nicer - specifically, if agent has high reputation,
         #       maybe make defection seem 'worse'
         # Basically want to modify rep more based on reputation of other
@@ -147,10 +164,19 @@ class Agent:
     def mate(self, other, self_choice, other_choice):
         # try to mate
         if self_choice and other_choice:
-            # TODO: ADD GENETIC STUFF
-            pass
-        # made baby
-        self.children += 1
+            # make a new Agent
+            baby = Agent()
+            # TODO: SHOULD INFLUENCE BASED ON PARENT'S ATTRIBUTES
+
+            # set baby's reputation high
+            baby.reputation[self]  = 1.
+            baby.reputation[other] = 1.
+
+            # increase baby count
+            self.children += 1
+
+            return baby
+        return None
 
     def punish(self, other, self_choice, other_choice):
         # punish the other agent - mostly affects reputation
@@ -173,21 +199,6 @@ class Agent:
     def rest(self, other, self_choice, other_choice):
         # increases leisure
         self.leisure += np.random.randint(1,5)
-
-    def make_baby(self, other):
-        # combine stuff...mutate...etc.
-        # how to add agent to simulation list from here?
-        # to combine, could...average parent's markers?
-        # and parent's cultures?
-        # and utility/percpetion preferences...
-        # could add in some random variation
-
-        # make a new Agent
-        baby = Agent()
-
-        # combine and mutate 
-
-        pass
 
     def constrain(self, v):
         # constrain v between -1 and 1
