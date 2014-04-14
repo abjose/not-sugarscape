@@ -86,9 +86,10 @@ class Agent:
         # update reputations
         self.update_reputation(other, other_choice)
         other.update_reputation(self, self_choice)
-        # TODO:  consider outcome rather than just whether they cooperated?
 
-        # subtract metabolism from resource store - die if too low
+        # subtract metabolism from resource store
+        self.food    -= self.food_metabolism
+        self.leisure -= self.leisure_metabolism
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
@@ -155,12 +156,9 @@ class Agent:
         if self_choice and other_choice:
             # TODO: ADD GENETIC STUFF
             pass
-        # update scores
-        self.food     -= self_food_cost
-        other.food    -= other_food_cost
-        self.leisure  -= self_leisure_cost
-        other.leisure -= other_leisure_cost
-        # TODO: kinda stupid to choose 'mate' if already decided not to?
+        # made baby
+        self.children += 1
+
 
     def attack(self, other, self_choice, other_choice):
         # fight!
