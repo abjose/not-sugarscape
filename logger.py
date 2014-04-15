@@ -34,16 +34,22 @@ class Logger:
 class RoundLog:
     
     def __init__(self, ):
+        # number of agents
         self.num_agents = 0
+        # number of cooperation or defection decisions
         self.cooperated = 0
         self.defected   = 0
         self.actions  = dict(mate=0, hunt=0, rest=0, punish=0, gather=0,)
         # amount of resource possessed by agents
         self.resource_sums = dict(food=0, leisure=0, reputation=0, children=0)
         # expected rewards for each resource
-        self.reward_sums   = dict(food=0, leisure=0, reputation=0, children=0)
+        d = dict(food=0, leisure=0, reputation=0, children=0)
+        self.reward_sums = dict([(k, d.copy()) for k in self.actions.keys()])
+        # utility of all agents
         self.utility_sum = 0
+        # largest utility of any agent
         self.largest_utility = -1
+        # smallest utility of any agent
         self.smallest_utility = 99999
 
     def log_agent(self, agent):
@@ -68,8 +74,6 @@ class RoundLog:
         self.resource_sums['children'] += agent.children
         self.resource_sums['reputation'] += agent.get_reputation(agent)
         # sum rewards
-        self.resource_sums['food']     += agent.rewards['food']
-        self.resource_sums['leisure']  += agent.rewards['leisure']
-        self.resource_sums['children'] += agent.rewards['children']
-        self.resource_sums['reputation'] += agent.rewards['reputation']
-
+        for ak in self.actions.keys():
+            for rk in self.resource_sums.keys():
+                self.reward_sums[ak][rk] += agent.rewards[ak][rk]
