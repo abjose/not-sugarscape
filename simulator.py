@@ -32,7 +32,10 @@ class Simulator:
         self.agents = alive
 
     def run(self, ):
-        while True:
+        i = 0
+        while len(self.agents):
+            i += 1
+            print 'round', i, '\nagents left:', len(self.agents)
             self.tick()
 
     # in whichever function makes agents act, make sure to remove
