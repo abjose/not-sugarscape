@@ -46,6 +46,9 @@ class Simulator:
             print 'round', i, '\nagents left:', len(self.agents)
             self.tick()
 
+        # plot things
+        self.logger.plot()
+
     # in whichever function makes agents act, make sure to remove
     # agent from list if it dies
 
