@@ -3,6 +3,8 @@
 For logging/plotting information about agents.
 """
 
+import matplotlib.pyplot as plt
+
 class Logger:
 
     def __init__(self, ):
@@ -17,14 +19,15 @@ class Logger:
         self.rounds[-1].log_agent(agent)
 
     def plot(self, ):
-        # plot...
-        # for each round...
-        #  how many agents cooperated/defected
-        #  resources
-        #  actions
-        #  (average?) expected utility of each action over time
-        #  global utility (also be able to see highest/lowest utility...)
-        #  number of agents
+        # plot lots of things after simulation done
+        # TODO: MAKE PLOT IN REAL TIME
+     
+        # how many agents cooperated/defected
+        # resources
+        # actions
+        # (average?) expected utility of each action over time
+        # global utility (also be able to see highest/lowest utility...)
+        # number of agents
         pass
 
 
@@ -35,7 +38,10 @@ class RoundLog:
         self.cooperated = 0
         self.defected   = 0
         self.actions  = dict(mate=0, hunt=0, rest=0, punish=0, gather=0,)
+        # amount of resource possessed by agents
         self.resource_sums = dict(food=0, leisure=0, reputation=0, children=0)
+        # expected rewards for each resource
+        self.reward_sums   = dict(food=0, leisure=0, reputation=0, children=0)
         self.utility_sum = 0
         self.largest_utility = -1
         self.smallest_utility = 99999
@@ -61,4 +67,9 @@ class RoundLog:
         self.resource_sums['leisure']  += agent.leisure
         self.resource_sums['children'] += agent.children
         self.resource_sums['reputation'] += agent.get_reputation(agent)
+        # sum rewards
+        self.resource_sums['food']     += agent.rewards['food']
+        self.resource_sums['leisure']  += agent.rewards['leisure']
+        self.resource_sums['children'] += agent.rewards['children']
+        self.resource_sums['reputation'] += agent.rewards['reputation']
 
