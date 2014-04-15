@@ -16,10 +16,11 @@ TODO
 """
 
 import numpy as np
+import pprint
 
 class Agent:
-    max_food_met = 5
-    max_leisure_met = 5
+    max_food_met = 3
+    max_leisure_met = 3
 
     # stag hunt game
     game = {}
@@ -33,10 +34,10 @@ class Agent:
 
     def __init__(self, ):
         # food store and rate of consumption
-        self.food = np.random.randint(5,26)
+        self.food = 20#np.random.randint(15,26)
         self.food_metabolism = np.random.randint(1,Agent.max_food_met)
         # leisure store and rate of consumption
-        self.leisure = np.random.randint(5,26)
+        self.leisure = 20#np.random.randint(15,26)
         self.leisure_metabolism = np.random.randint(1,Agent.max_leisure_met)
 
         # number of children created
@@ -59,8 +60,13 @@ class Agent:
                             gather = self.gather,)
 
         # mapping from action to expected resource change
-        d = dict(food=0, leisure=0, reputation=0, children=0)
+        d = dict(food=5, leisure=5, reputation=5, children=5)
         self.rewards = dict([(k, d.copy()) for k in self.actions.keys()])
+
+        # some logging stuff
+        self.last_self_choice = None
+        self.last_other_choice = None
+        self.last_action = None
 
     def act(self, agents):
         """ Choose an action greedily based on perceived future utility. """
@@ -100,13 +106,19 @@ class Agent:
         self.update_reputation(other, other_choice)
         other.update_reputation(self, self_choice)
 
+        # update perception of rewards
+        new_res = self.get_resources(self)
+        self.update_rewards(best_action, res, new_res)
+        pprint.pprint(self.rewards)
+
         # subtract metabolism from resource store
         self.food    -= self.food_metabolism
         self.leisure -= self.leisure_metabolism
 
-        # update perception of rewards
-        new_res = self.get_resources(self)
-        self.update_rewards(best_action, res, new_res)
+        # update logging variables
+        self.last_self_choice = self_choice
+        self.last_other_chioce = other_choice
+        self.last_action = best_action
 
     def get_resources(self, agent):
         """ Return given agent's resources. """
@@ -186,7 +198,7 @@ class Agent:
     def punish(self, other, self_choice, other_choice):
         # punish the other agent - mostly affects reputation
         self.reputation[other] = self.constrain(self.get_reputation(other)-0.1)
-        self.reputation[self]  = self.constrain(self.get_reputation(self) -0.1)
+        self.reputation[self]  = self.constrain(self.get_reputation(self) +0.1)
         # uhh, update other agent's reputation dict?
 
     def hunt(self, other, self_choice, other_choice):
