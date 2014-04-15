@@ -9,7 +9,8 @@ from logger import Logger
 
 
 """
-Have a bag of agents, facilitate interactions...
+TODO:
+- instead of only plotting when done, allow plotting anytime you press something
 """
 
 class Simulator:
@@ -19,6 +20,9 @@ class Simulator:
         self.logger = Logger()
 
     def tick(self, ):
+        # update logger
+        self.logger.advance_round()
+
         # keep track of who's still living
         alive = self.agents
 
@@ -36,12 +40,10 @@ class Simulator:
 
         # remove dead agents from original list
         self.agents = alive
-        # update logger
-        self.logger.advance_round()
 
     def run(self, ):
         i = 0
-        while len(self.agents):
+        while len(self.agents) > 1:
             i += 1
             print 'round', i, '\nagents left:', len(self.agents)
             self.tick()
@@ -57,5 +59,5 @@ if __name__=='__main__':
     # should initially populate environment with agents
     # to tick, select agents in random order to carry out its rules
     
-    s = Simulator(10)
+    s = Simulator(100)
     s.run()
