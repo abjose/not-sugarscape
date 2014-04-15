@@ -3,12 +3,18 @@
 For logging/plotting information about agents.
 """
 
+"""
+TODO
+- make plots plot in real time
+- ADD LABELS AND STUFF
+"""
+
 import matplotlib.pyplot as plt
 
 class Logger:
 
     def __init__(self, ):
-        self.rounds = [RoundLog()]
+        self.rounds = []
 
     def advance_round(self, ):
         # advance by one round
@@ -20,15 +26,37 @@ class Logger:
 
     def plot(self, ):
         # plot lots of things after simulation done
-        # TODO: MAKE PLOT IN REAL TIME
-     
-        # how many agents cooperated/defected
-        # resources
-        # actions
-        # (average?) expected utility of each action over time
-        # global utility (also be able to see highest/lowest utility...)
         # number of agents
-        pass
+        plt.plot([r.num_agents for r in self.rounds])
+        plt.show()
+        
+        # average, max, and min utility over time
+        plt.plot([r.utility_sum/float(r.num_agents) for r in self.rounds])
+        plt.plot([r.max_utility for r in self.rounds])
+        plt.plot([r.min_utility for r in self.rounds])
+        plt.show()
+
+        # proportion of cooperations to defections over time
+        # TODO: SWITCH TO SHOW RELATIVE PROPORTION!
+        #plt.plot([r.cooperated / float(r.cooperated+r.defected)
+        #          for r in self.rounds])
+        plt.plot([r.cooperated for r in self.rounds])
+        plt.plot([r.defected for r in self.rounds])
+        plt.show()
+
+        # actions chosen over time
+        # TODO: SWITCH TO SHOW RELATIVE PROPORTION!
+        plt.plot([r.actions['mate'] for r in self.rounds])
+        plt.plot([r.actions['hunt'] for r in self.rounds])
+        plt.plot([r.actions['rest'] for r in self.rounds])
+        plt.plot([r.actions['punish'] for r in self.rounds])
+        plt.plot([r.actions['gather'] for r in self.rounds])
+        plt.show()
+
+
+        # expected rewards for each action over time
+
+        # possessed resources over time
 
 
 class RoundLog:
@@ -48,9 +76,9 @@ class RoundLog:
         # utility of all agents
         self.utility_sum = 0
         # largest utility of any agent
-        self.largest_utility = -1
+        self.max_utility = -1
         # smallest utility of any agent
-        self.smallest_utility = 99999
+        self.min_utility = 99999
 
     def log_agent(self, agent):
         """ Store stats about passed agent """
@@ -66,8 +94,8 @@ class RoundLog:
         # count utility
         u = agent.utility(agent.get_resources(agent))
         self.utility_sum += u
-        if u > self.largest_utility:  self.largest_utility = u
-        if u < self.smallest_utility: self.smallest_utility = u
+        if u > self.max_utility: self.max_utility = u
+        if u < self.min_utility: self.min_utility = u
         # sum resources
         self.resource_sums['food']     += agent.food
         self.resource_sums['leisure']  += agent.leisure
