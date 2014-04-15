@@ -3,14 +3,18 @@
 For logging/plotting information about agents.
 """
 
-
-# just pass same instance to every agent?
-
-
 class Logger:
 
     def __init__(self, ):
-        self.rounds = []
+        self.rounds = [RoundLog()]
+
+    def advance_round(self, ):
+        # advance by one round
+        self.rounds.append(RoundLog())
+
+    def log_agent(self, agent,):
+        # log agent in current round
+        self.rounds[-1].log_agent(agent)
 
     def plot(self, ):
         # plot...
@@ -21,7 +25,6 @@ class Logger:
         #  (average?) expected utility of each action over time
         #  global utility (also be able to see highest/lowest utility...)
         #  number of agents
-        
         pass
 
 
@@ -49,13 +52,13 @@ class RoundLog:
         # count actions
         self.actions[agent.last_action] += 1
         # count utility
-        u = agent.utility(agent)
+        u = agent.utility(agent.get_resources(agent))
         self.utility_sum += u
-        if u > largest_utility:  largest_utility = u
-        if u < smallest_utility: smallest_utility = u
+        if u > self.largest_utility:  self.largest_utility = u
+        if u < self.smallest_utility: self.smallest_utility = u
         # sum resources
-        self.resources_sums['food']     += agent.food
-        self.resources_sums['leisure']  += agent.leisure
-        self.resources_sums['children'] += agent.children
-        self.resources_sums['reputation'] += agent.reputation(agent)
+        self.resource_sums['food']     += agent.food
+        self.resource_sums['leisure']  += agent.leisure
+        self.resource_sums['children'] += agent.children
+        self.resource_sums['reputation'] += agent.get_reputation(agent)
 
