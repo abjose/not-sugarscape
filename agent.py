@@ -13,6 +13,9 @@ TODO
 - kinda weird that still calculate cooperation on non-social tasks
 - MAKE PUNISHMENT BETTER
 - add initial better guesses to rewards?
+- verify that behavior is appropriate when only 1 agent left - shouldn't try
+  to mate with self, etc... MAYBE THIS IS GOOD PLACE TO INSERT DISTINCTION
+  BETWEEN SOCIAL AND NON-SOCIAL ACTIONS
 """
 
 import numpy as np
@@ -85,8 +88,6 @@ class Agent:
                 best_utility = pu
                 best_action  = action
 
-        print 'I am doing:', best_action
-
         # one-liner...
         #action = self.actions[max(self.actions.keys(), key=lambda a: self.utility(self.add_resources(res,self.rewards[a])))]
  
@@ -109,7 +110,8 @@ class Agent:
         # update perception of rewards
         new_res = self.get_resources(self)
         self.update_rewards(best_action, res, new_res)
-        pprint.pprint(self.rewards)
+        #pprint.pprint(self.rewards)
+        #print 'I am doing:', best_action, '\n'
 
         # subtract metabolism from resource store
         self.food    -= self.food_metabolism
@@ -117,7 +119,7 @@ class Agent:
 
         # update logging variables
         self.last_self_choice = self_choice
-        self.last_other_chioce = other_choice
+        self.last_other_choice = other_choice
         self.last_action = best_action
 
     def get_resources(self, agent):
@@ -171,7 +173,7 @@ class Agent:
 
     def cooperates_with(self, other):
         # return true if cooperates, false otherwise
-        return np.random.uniform() < self.get_reputation(other)
+        return True#np.random.uniform() < self.get_reputation(other)
 
     def receive_meme(self, other):
         # maybe learn from other
