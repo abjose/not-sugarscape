@@ -25,14 +25,14 @@ class Agent:
     max_food_met = 3
     max_leisure_met = 3
 
-    # stag hunt game
+    # stag hunt or prisoner's dilemma
     game = {}
     # self, other for both choice and score
-    big = max_food_met*3
-    lil = max_food_met+5
+    big = max_food_met+10#+5
+    lil = max_food_met+5#+10
     game[(True,True)]   = (big,big)
-    game[(True,False)]  = (0,  lil)
-    game[(False,True)]  = (lil,0)
+    game[(True,False)]  = (-17, lil+22)
+    game[(False,True)]  = (lil+22, -17)
     game[(False,False)] = (lil,lil)
 
     def __init__(self, ):
@@ -64,7 +64,9 @@ class Agent:
 
         # mapping from action to expected resource change
         d = dict(food=5, leisure=5, reputation=5, children=5)
-        self.rewards = dict([(k, d.copy()) for k in self.actions.keys()])
+        self.rewards = dict([(k, d.copy()) 
+                             for k in self.actions.keys() + 
+                             ['cooperate', 'defect']])
 
         # some logging stuff
         self.last_self_choice = None
@@ -93,6 +95,8 @@ class Agent:
  
         # decide if cooperating
         self_choice  = self.cooperates_with(other)
+        #if self_choice: print 'COOPERATING!'
+        #else: print 'DEFECTING!'
         other_choice = other.cooperates_with(self)
 
         # do action
@@ -104,15 +108,18 @@ class Agent:
             self.actions[best_action](other, self_choice, other_choice)
 
         # update reputations
-        self.update_reputation(other, other_choice)
-        other.update_reputation(self, self_choice)
+        if action in ['mate', 'hunt']:
+            self.update_reputation(other, other_choice)
+            other.update_reputation(self, self_choice)
 
         # update perception of rewards
         new_res = self.get_resources(self)
         self.update_rewards(best_action, res, new_res)
-        #pprint.pprint(self.rewards)
-        #print 'I am doing:', best_action, '\n'
-
+        if self_choice: self.update_rewards('cooperate', res, new_res)
+        else:           self.update_rewards('defect', res, new_res)
+        if other_choice: other.update_rewards('cooperate', res, new_res)
+        else:            other.update_rewards('defect', res, new_res)
+        
         # subtract metabolism from resource store
         self.food    -= self.food_metabolism
         self.leisure -= self.leisure_metabolism
@@ -147,7 +154,7 @@ class Agent:
         # calculate leisure well-being
         lwb = resources['leisure'] / float(self.leisure_metabolism)
         # number of children...
-        c = resources['children']
+        c = 5*resources['children']
         # reputation...
         r = resources['reputation']
         # return sum
@@ -173,7 +180,14 @@ class Agent:
 
     def cooperates_with(self, other):
         # return true if cooperates, false otherwise
-        return True#np.random.uniform() < self.get_reputation(other)
+        # TODO: INCLUDE UTILITY CALC
+        # TODO: evolve weights to these too...
+        #return np.random.uniform() < self.get_reputation(other)
+        res = self.get_resources(self)
+        cu = self.utility(self.add_resources(res, self.rewards['cooperate']))
+        du = self.utility(self.add_resources(res, self.rewards['defect']))
+        return (self.get_reputation(other)-.5)*5. + cu > du
+        # STABLE-ISH AT *1.!
 
     def receive_meme(self, other):
         # maybe learn from other
@@ -190,6 +204,12 @@ class Agent:
             # set baby's reputation high
             baby.reputation[self]  = 1.
             baby.reputation[other] = 1.
+
+            # costly!!
+            self.food  -= 2
+            other.food -= 2
+            self.leisure  -= 2
+            other.leisure -= 2
 
             # increase baby count
             self.children += 1
@@ -221,6 +241,23 @@ class Agent:
     def constrain(self, v):
         # constrain v between -1 and 1
         return min(max(-1.,v),1.)
+
+
+class Government:
+
+    """
+    Should just tax negative interactions, add extra reward to positive ones
+    interesting to relate this to norm punishment vs. reward stuff
+    add something evaluating future utility to decision to cooperate?
+    just keep track of change in utility based on cooperation vs defection
+    decisions...
+    """
+
+
+    def __init__(self, ):
+        pass
+
+
 
 
 if __name__=='__main__':
