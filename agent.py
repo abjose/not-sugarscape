@@ -25,6 +25,11 @@ class Agent:
     max_food_met = 3
     max_leisure_met = 3
 
+    # KEEP TRACK OF REVENUE???
+    government = dict()
+    government[True]  = 0
+    government[False] = 0#-5
+
     # stag hunt or prisoner's dilemma
     game = {}
     # self, other for both choice and score
@@ -107,6 +112,10 @@ class Agent:
         else:
             self.actions[best_action](other, self_choice, other_choice)
 
+        # do government stuff
+        self.food  += Agent.government[self_choice]
+        other.food += Agent.government[other_choice]
+
         # update reputations
         if action in ['mate', 'hunt']:
             self.update_reputation(other, other_choice)
@@ -186,8 +195,8 @@ class Agent:
         res = self.get_resources(self)
         cu = self.utility(self.add_resources(res, self.rewards['cooperate']))
         du = self.utility(self.add_resources(res, self.rewards['defect']))
-        return (self.get_reputation(other)-.5)*5. + cu > du
-        # STABLE-ISH AT *1.!
+        #return (self.get_reputation(other)-.5)*5. + cu > du
+        return False
 
     def receive_meme(self, other):
         # maybe learn from other
@@ -255,8 +264,14 @@ class Government:
 
 
     def __init__(self, ):
+        # keep track of revenue?
         pass
-
+    
+    def get_tax(self, choice):
+        if choice:
+            return 5
+        else:
+            return -5
 
 
 
