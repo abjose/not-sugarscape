@@ -3,7 +3,7 @@
 Brings together other components into a single simulation.
 """
 
-from environment import Environment
+#from environment import Environment
 from agent import Agent
 from logger import Logger
 
@@ -32,7 +32,7 @@ class Simulator:
 
             if a.food <= 0 or a.leisure <= 0:
                 # kill a
-                print 'WOE IS ME!'
+                #print 'WOE IS ME!'
                 alive.remove(a)
 
             # log agent
@@ -43,9 +43,9 @@ class Simulator:
 
     def run(self, ):
         i = 0
-        while len(self.agents) > 1:
+        while len(self.agents) > 20 and len(self.agents) < 3000 :
             i += 1
-            print 'round', i, '\nagents left:', len(self.agents)
+            print 'round', i, '\tagents left:', len(self.agents)
             self.tick()
 
         # plot things
@@ -59,5 +59,5 @@ if __name__=='__main__':
     # should initially populate environment with agents
     # to tick, select agents in random order to carry out its rules
     
-    s = Simulator(100)
+    s = Simulator(50)
     s.run()
