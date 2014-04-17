@@ -43,7 +43,7 @@ class Simulator:
 
     def run(self, ):
         i = 0
-        while len(self.agents) > 20 and len(self.agents) < 3000 :
+        while len(self.agents) > 20 and len(self.agents) < 1000 :
             i += 1
             print 'round', i, '\tagents left:', len(self.agents)
             self.tick()
@@ -59,5 +59,5 @@ if __name__=='__main__':
     # should initially populate environment with agents
     # to tick, select agents in random order to carry out its rules
     
-    s = Simulator(50)
+    s = Simulator(100)
     s.run()
