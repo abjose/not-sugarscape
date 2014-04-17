@@ -89,7 +89,7 @@ class Logger:
 
         # expected rewards for each action over time
         plt.subplot(511)
-        plt.title('Expected reward for action over time')
+        plt.title('Expected reward for action over time - mate')
         plt.ylabel('reward amount')        
         r0 = self.rounds[0]
         for rk in r0.resource_sums.keys():
@@ -97,24 +97,28 @@ class Logger:
                       for r in self.rounds], label=rk)
         plt.legend()
         plt.subplot(512)
+        plt.title('hunt')
         plt.ylabel('reward amount')        
         for rk in r0.resource_sums.keys():
             plt.plot([r.reward_sums['hunt'][rk] / float(r.num_agents) 
                       for r in self.rounds], label=rk)
         plt.legend()
         plt.subplot(513)
+        plt.title('rest')
         plt.ylabel('reward amount')        
         for rk in r0.resource_sums.keys():
             plt.plot([r.reward_sums['rest'][rk] / float(r.num_agents) 
                       for r in self.rounds], label=rk)
         plt.legend()
         plt.subplot(514)
+        plt.title('punish')
         plt.ylabel('reward amount')        
         for rk in r0.resource_sums.keys():
             plt.plot([r.reward_sums['punish'][rk] / float(r.num_agents) 
                       for r in self.rounds], label=rk)
         plt.legend()
         plt.subplot(515)
+        plt.title('gather')
         plt.ylabel('reward amount')        
         plt.xlabel('time')
         for rk in r0.resource_sums.keys():
